@@ -1,71 +1,50 @@
-import React, {ChangeEvent, FC, useState} from 'react'
+import { FC } from 'react'
 import Modal from 'react-modal'
-import {BasicButton} from "../BasicButton/BasicButton";
-import {Block} from '../../styled-components/common';
+import { useCustomModal } from './useCustomModal'
+import { OnlyMessageContent } from './OnlyMessageContent/OnlyMessageContent'
+import { Content } from './Content/Content'
 
-
-type CustomModalPropsType = {
-  isOpen: boolean,
-  submit: (value: string) => void
-  cancel: () => void
+const customStyles = {
+  content: {
+    top: '20%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+  },
 }
 
-export const CustomModal: FC<CustomModalPropsType> = ({isOpen, submit, cancel}) => {
-  const customStyle = {
-    content: {
-      top: '5%',
-      left: '15%',
-      right: 'auto',
-      bottom: 'auto',
-      marginRight: '-50%',
-      transform: 'transparent(-50%, -50%)',
-      width: '200px',
-      height: '100px'
-    }
-  }
+type CustomModalPropsType = {
+  isOpen: boolean
+  onClose: () => void
+  onlyMessage?: boolean
+}
 
-  const [inputValue, setInputValue] = useState('')
-
-  const [error, setError] = useState(false)
-
-  const changeInputValueHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value)
-  }
-
-  const submitHandler = () => {
-    if (error) {
-      setError(false)
-    }
-    if (inputValue) {
-      submit(inputValue)
-      setInputValue('')
-      cancel()
-      setError(false)
-    }
-    setError(true)
-  }
-
-  const cancelHandler = () => {
-    cancel()
-  }
+export const CustomModal: FC<CustomModalPropsType> = ({ isOpen, onClose, onlyMessage }) => {
+  const {
+    label,
+    message,
+    inputValue,
+    changeInputValueHandler,
+    onSubmitHandler,
+    onCloseModalHandler,
+  } = useCustomModal(onClose)
 
   return (
-    <Modal isOpen={isOpen} style={customStyle}>
-      <Block flexDirection={'column'} alignItems={'space-between'}>
-        {!error ?
-          <>
-            <Block>Enter the question text</Block>
-            <Block>
-              <input type="text" value={inputValue} onChange={changeInputValueHandler}/>
-            </Block>
-          </>
-            : <Block>You will not enter question text. Please, try again</Block>
-        }
-        <Block justifyContent={'flex-end'}>
-          <BasicButton text={'OK'} onClick={submitHandler}/>
-          {!error && <BasicButton text={'Cancel'} onClick={cancelHandler}/>}
-        </Block>
-      </Block>
+    <Modal isOpen={isOpen} style={customStyles} ariaHideApp={false}>
+      {onlyMessage ? (
+        <OnlyMessageContent message={message} onSubmit={onSubmitHandler} />
+      ) : (
+        <Content
+          message={message}
+          label={label}
+          inputValue={inputValue}
+          changeInputValueHandler={changeInputValueHandler}
+          onSubmit={onSubmitHandler}
+          onClose={onCloseModalHandler}
+        />
+      )}
     </Modal>
   )
 }
